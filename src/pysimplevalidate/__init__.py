@@ -226,7 +226,7 @@ def _getStrippedValue(value, strip):
     return value
 
 
-def _raiseValidationException(standardExcMsg, customExcMsg=None, values=[], exeption=None):
+def _raiseValidationException(standardExcMsg, customExcMsg=None, values=[], exception=None):
     # type: (str, Optional[str]) -> None
     """Raise ValidationException with standardExcMsg, unless customExcMsg is specified."""
     if customExcMsg is None:
@@ -236,9 +236,10 @@ def _raiseValidationException(standardExcMsg, customExcMsg=None, values=[], exep
         #replace all the placeholders with the given values
         for i, value in enumerate(values):
             finalMsg = finalMsg.replace(SUBSTITUTE_PARAMETERS[i], value)
-        finalMsg = finalMsg.replace("%%e", exeption)
 
-        #if there weren't values for the place holders, just remove them
+        if exception: finalMsg = finalMsg.replace("%%e", exception)
+
+        #if there weren't values for the placeholders, just remove them
         for i in range(len(SUBSTITUTE_PARAMETERS)):
             finalMsg = finalMsg.replace(SUBSTITUTE_PARAMETERS[i], '')
 
