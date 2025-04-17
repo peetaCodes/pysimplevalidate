@@ -17,7 +17,7 @@ enLang = gettext.translation('pysimplevalidate', localedir=os.path.join(FOLDER_O
 enLang.install()
 # TODO - should i have a setLang() function?
 
-__version__ = "0.2.12"  # type: str
+__version__ = "0.0.4"  # type: str
 
 # In Python 3, regex pattern classes are re.Pattern
 # In Python 2, regex pattern classes are SRE_Pattern but there's no exposed class that I can pass to isinstance.
@@ -246,7 +246,7 @@ def _raiseValidationException(standardExcMsg, customExcMsg=None, values=[], exce
         raise ValidationException(str(finalMsg))
 
 
-def _prevalidationCheck(value, blank, strip, allowRegexes, blockRegexes, excMsg=None):
+def _prevalidationCheck(value, blank, strip, allowRegexes, blockRegexes, whiteList, blackList, excMsg=None):
     # type: (str, bool, Union[None, str, bool], Union[None, Sequence[Union[Pattern, str]]], Union[None, Sequence[Union[Pattern, str, Sequence[Union[Pattern, str]]]]], Optional[str]) -> Tuple[bool, str]
     """Returns a tuple of two values: the first is a bool that tells the caller
     if they should immediately return True, the second is a new, possibly stripped
@@ -307,6 +307,22 @@ def _prevalidationCheck(value, blank, strip, allowRegexes, blockRegexes, excMsg=
                 _raiseValidationException(response, excMsg, [value])  # value is on a blocklist
             elif re.search(regex, value) is not None:
                 _raiseValidationException(response, excMsg, [value])  # value is on a blocklist
+
+        # Check the whiteList.
+        if whiteList is not None:
+            if value in allowElement:
+                return (
+                    True,
+                    value,
+                )  # The value is in the allowlist, so return True to indicate that the caller should return value immediately.
+
+        # Check the blockRegexes.
+        if blackList is not None:
+            if value in allowElement:
+                return (
+                    True,
+                    value,
+                )  # value is on a blocklist
 
     return (
         False,
@@ -390,7 +406,7 @@ def _validateParamsFor_validateNum(min=None, max=None, lessThan=None, greaterTha
             raise PySimpleValidateException(name + " argument must be int, float, or NoneType")
 
 
-def validateStr(value, blank=False, strip=None, allowRegexes=None, blockRegexes=None, excMsg=None):
+def validateStr(value, blank=False, strip=None, allowRegexes=None, blockRegexes=None, excMsg=None, whiteList=None, blackList=None,):
     # type: (str, bool, Union[None, str, bool], Union[None, Sequence[Union[Pattern, str]]], Union[None, Sequence[Union[Pattern, str, Sequence[Union[Pattern, str]]]]], Optional[str]) -> str
     """Raises ValidationException if value is not a string. This function
     is identical to the built-in input() function, but also offers the
@@ -434,7 +450,7 @@ def validateStr(value, blank=False, strip=None, allowRegexes=None, blockRegexes=
 
     # Validate parameters.
     _validateGenericParameters(blank=blank, strip=strip, allowRegexes=None, blockRegexes=blockRegexes)
-    returnNow, value = _prevalidationCheck(value, blank, strip, allowRegexes, blockRegexes, excMsg)
+    returnNow, value = _prevalidationCheck(value, blank, strip, allowRegexes, blockRegexes, whiteList, blackList, excMsg)
 
     return value
 
@@ -445,6 +461,8 @@ def validateNum(
     strip=None,
     allowRegexes=None,
     blockRegexes=None,
+    whiteList=None,
+    blackList=None,
     _numType="num",
     min=None,
     max=None,
@@ -575,6 +593,8 @@ def validateInt(
     strip=None,
     allowRegexes=None,
     blockRegexes=None,
+    whiteList=None,
+    blackList=None,
     min=None,
     max=None,
     lessThan=None,
@@ -622,6 +642,8 @@ def validateInt(
         strip=strip,
         allowRegexes=allowRegexes,  # type: ignore
         blockRegexes=blockRegexes,
+        whiteList=whiteList,
+        blackList=blackList,
         _numType="int",
         min=min,
         max=max,
@@ -637,6 +659,8 @@ def validateFloat(
     strip=None,
     allowRegexes=None,
     blockRegexes=None,
+    whiteList=None,
+    blackList=None,
     min=None,
     max=None,
     lessThan=None,
@@ -697,6 +721,8 @@ def validateFloat(
         strip=strip,
         allowRegexes=allowRegexes,
         blockRegexes=blockRegexes,
+        whiteList=whiteList,
+        blackList=blackList,
         _numType="float",
         min=min,
         max=max,
