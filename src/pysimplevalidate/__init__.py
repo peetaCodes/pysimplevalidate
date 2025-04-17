@@ -304,9 +304,9 @@ def _prevalidationCheck(value, blank, strip, allowRegexes, blockRegexes, excMsg=
                 regex, response = blocklistRegexItem  # type: ignore
 
             if isinstance(regex, RE_PATTERN_TYPE) and regex.search(value) is not None:
-                _raiseValidationException(response, excMsg)  # value is on a blocklist
+                _raiseValidationException(response, excMsg, [value])  # value is on a blocklist
             elif re.search(regex, value) is not None:
-                _raiseValidationException(response, excMsg)  # value is on a blocklist
+                _raiseValidationException(response, excMsg, [value])  # value is on a blocklist
 
     return (
         False,
